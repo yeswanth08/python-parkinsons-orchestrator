@@ -1,0 +1,21 @@
+// protocol desing using IDL(proto) as an exchange and protocol master format
+
+syntax = "proto3";
+
+package gen;
+
+service ParkinsonsVoiceScreening {
+  rpc StreamAudio (stream AudioChunk) returns (Response);
+}
+
+message AudioChunk {
+  // binary audio data (WAV,MP3 or PCM)
+  bytes chunk = 1;
+}
+
+// this is the result which we give the client (basically will be a json in rest)
+message Response {
+  int32 classification = 1;
+  float severity = 2;
+  string message = "some response msg";
+}
