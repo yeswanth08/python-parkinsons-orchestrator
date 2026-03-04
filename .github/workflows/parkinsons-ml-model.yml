@@ -1,0 +1,58 @@
+name: Pull Latest ML Model
+
+on:
+  repository_dispatch:
+    types: [model_updated]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Download Specific Version
+        run: |
+          VERSION="${{ github.event.client_payload.version }}"
+
+          RELEASE_JSON=$(curl -s https://api.github.com/repos/yeswanth08/parkinsons-risk-screening-model/releases/tags/$VERSION)
+
+          CLASS_URL=$(echo $RELEASE_JSON | jq -r '.assets[] | select(.name=="classfication_model.pkl") | .browser_download_url')
+          SEVERITY_URL=$(echo $RELEASE_JSON | jq -r '.assets[] | select(.name=="severity_model.pkl") | .browser_download_url')
+
+          mkdir -p models
+
+          curl -L $CLASS_URL -o models/classfication_model.pkl
+          curl -L $SEVERITY_URL -o models/severity_model.pkl
+          
+      - name: Commit Model Updates & Create PR
+        run: |
+          VERSION="${{ github.event.client_payload.version }}"
+          BRANCH="model-update-$VERSION"
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git checkout -b $BRANCH
+
+          git add models/classfication_model.pkl
+          git add models/severity_model.pkl
+
+          git commit -m "Update ML models to version $VERSION" || echo "No changes"
+
+          git push origin $BRANCH
+
+          gh pr create \
+            --title "Model Update: $VERSION" \
+            --body "Automated model update from ML release $VERSION" \
+            --assignee yeswanth08\
+            --base main \
+            --head $BRANCH
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
