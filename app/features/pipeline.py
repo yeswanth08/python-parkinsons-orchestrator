@@ -16,6 +16,9 @@ def run_pipeline(feature_dict, age, sex, test_time):
     clf_vector = build_classification_vector(feature_dict)
     clf_df = pd.DataFrame([clf_vector],columns=CLASSIFICATION_FEATURES)
 
+    # print(clf_df.to_dict(orient='records'))
+    # print(classifier.predict_proba(clf_df))  # confidence
+
     prediction = classifier.predict(clf_df)[0]
 
     if prediction == 0:
