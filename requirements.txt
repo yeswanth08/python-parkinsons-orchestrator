@@ -1,4 +1,10 @@
 grpcio
 grpcio-tools
+pandas
 numpy
 scikit-learn
+joblib
+praat-parselmouth
+pathlib
+imblearn
+typing
