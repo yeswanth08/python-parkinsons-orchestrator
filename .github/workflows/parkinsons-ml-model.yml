@@ -23,12 +23,12 @@ jobs:
 
           RELEASE_JSON=$(curl -s https://api.github.com/repos/yeswanth08/parkinsons-risk-screening-model/releases/tags/$VERSION)
 
-          CLASS_URL=$(echo $RELEASE_JSON | jq -r '.assets[] | select(.name=="classfication_model.pkl") | .browser_download_url')
+          CLASS_URL=$(echo $RELEASE_JSON | jq -r '.assets[] | select(.name=="classification_model.pkl") | .browser_download_url')
           SEVERITY_URL=$(echo $RELEASE_JSON | jq -r '.assets[] | select(.name=="severity_model.pkl") | .browser_download_url')
 
           mkdir -p models
 
-          curl -L $CLASS_URL -o models/classfication_model.pkl
+          curl -L $CLASS_URL -o models/classification_model.pkl
           curl -L $SEVERITY_URL -o models/severity_model.pkl
           
       - name: Commit Model Updates & Create PR
@@ -41,7 +41,7 @@ jobs:
 
           git checkout -b $BRANCH
 
-          git add models/classfication_model.pkl
+          git add models/classification_model.pkl
           git add models/severity_model.pkl
 
           git commit -m "Update ML models to version $VERSION" || echo "No changes"
