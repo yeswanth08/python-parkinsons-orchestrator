@@ -1,0 +1,70 @@
+==========================
+Parkinson's Disease — Voice Biomarker Extraction
+-------------------------------------------------
+
+Every feature implemented here is derived directly from the peer-reviewed
+literature that produced the two UCI datasets this system targets.
+
+PRIMARY REFERENCES
+------------------
+[L07]  Little MA, McSharry PE, Roberts SJ, Costello DAE, Moroz IM.
+       "Exploiting Nonlinear Recurrence and Fractal Scaling Properties for
+       Voice Disorder Detection."
+       BioMedical Engineering OnLine 2007, 6:23.
+       → Defines RPDE, DFA, spread1, spread2, D2, PPE, and confirms the
+         Praat-compatible jitter/shimmer/HNR pipeline for the UCI dataset.
+
+[L08]  Little MA, McSharry PE, Hunter EJ, Spielman J, Ramig LO.
+       "Suitability of Dysphonia Measurements for Telemonitoring of
+       Parkinson's Disease."
+       IEEE Trans Biomed Eng 2009, 56(4):1015-1022.
+       → Original paper for the UCI Parkinson's classification dataset (195
+         recordings, 31 subjects). Introduces PPE. Confirms Fo/Fhi/Flo
+         extraction via MDVP-equivalent Praat cross-correlation pitch.
+
+[T10]  Tsanas A, Little MA, McSharry PE, Ramig LO.
+       "Accurate Telemonitoring of Parkinson's Disease Progression by
+       Non-Invasive Speech Tests."
+       IEEE Trans Biomed Eng 2010, 57(4):884-893.
+       → Original paper for the UCI Telemonitoring dataset (5875 recordings,
+         42 subjects). Defines SEVERITY_FEATURES schema and UPDRS targets.
+
+[P96]  Boersma P, Weenink D. Praat: doing phonetics by computer.
+       University of Amsterdam, 1996–present.
+       https://www.fon.hum.uva.nl/praat/
+       → Authoritative source for all jitter, shimmer, and HNR formulas.
+         The Praat "Voice" manual pages explicitly map each measure to
+         the MDVP (Kay Elemetrics) parameter name used in the UCI datasets.
+
+[W17]  Wikipedia / Little (2007): Recurrence Period Density Entropy.
+       https://en.wikipedia.org/wiki/Recurrence_period_density_entropy
+       → Documents the canonical RPDE algorithm with phase-space embedding.
+
+FEATURE → PAPER PROVENANCE MAP
+--------------------------------
+MDVP:Fo(Hz)        mean F0 via cross-correlation pitch  [L08, P96]
+MDVP:Fhi(Hz)       max F0                               [L08, P96]
+MDVP:Flo(Hz)       min F0                               [L08, P96]
+
+MDVP:Jitter(%)     local period perturbation %          [L07, P96 Voice§2]
+MDVP:Jitter(Abs)   local absolute jitter (s)            [L07, P96 Voice§2]
+MDVP:RAP           3-point relative avg perturbation    [L07, P96 Voice§2]
+MDVP:PPQ           5-point pitch perturbation quotient  [L07, P96 Voice§2]
+Jitter:DDP         = 3 × RAP  (difference of diffs)     [P96 Voice§2]
+
+MDVP:Shimmer       local amplitude perturbation %       [L07, P96 Voice§3]
+MDVP:Shimmer(dB)   local shimmer in dB                  [L07, P96 Voice§3]
+Shimmer:APQ3       3-point amplitude perturbation quot. [L07, P96 Voice§3]
+Shimmer:APQ5       5-point amplitude perturbation quot. [L07, P96 Voice§3]
+MDVP:APQ           11-point amplitude perturbation quot.[L07, P96 Voice§3]
+Shimmer:DDA        = 3 × APQ3                           [P96 Voice§3]
+
+NHR                noise-to-harmonics ratio             [L07, P96 Voice§4]
+HNR                harmonics-to-noise ratio (dB)        [L07, P96 Voice§4]
+
+RPDE               recurrence period density entropy    [L07, W17]
+DFA                detrended fluctuation analysis α     [L07]
+spread1            nonlinear F0 variation measure 1     [L08]
+spread2            nonlinear F0 variation measure 2     [L08]
+D2                 correlation dimension estimate       [L07]
+PPE                pitch period entropy                 [L08]
