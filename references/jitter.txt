@@ -1,0 +1,31 @@
+ref of the jitter extraction from the voice 
+
+formulas and methodologies are taken from the ref of google and scientific wiki
+
+        Five jitter measures capturing micro-variations in vocal period [L07, P96].
+
+        FORMULAS  [P96 Voice§2, Boersma & Weenink]
+        ─────────
+        Let T_i be the i-th glottal period (i = 1…N).
+        T̄  = mean period.
+
+        Jitter(local) % = (1/(N-1) · Σ|T_i - T_{i+1}|) / T̄  × 100
+            → MDVP:Jitter(%),  MDVP threshold: 1.040%
+
+        Jitter(local, absolute) = 1/(N-1) · Σ|T_i - T_{i+1}|  (seconds)
+            → MDVP:Jitter(Abs), MDVP threshold: 83.200 µs
+
+        RAP  = (1/(N-2) · Σ|T_i - (T_{i-1}+T_i+T_{i+1})/3|) / T̄
+            → MDVP:RAP,  MDVP threshold: 0.680%
+
+        PPQ5 = (1/(N-4) · Σ|T_i - (1/5)·Σ_{j=-2}^{2} T_{i+j}|) / T̄
+            → MDVP:PPQ,  MDVP threshold: 0.840%
+
+        DDP  = (1/(N-2) · Σ|(T_i - T_{i-1}) - (T_{i+1} - T_i)|) / T̄
+             = 3 × RAP   (algebraic identity [P96])
+            → Jitter:DDP, MDVP threshold: 2.040%
+
+        Praat call args: (start=0, end=0, minPeriod=0.0001, maxPeriod=0.02,
+                          maxPeriodFactor=1.3)
+        minPeriod/maxPeriod bracket reasonable glottal periods (50–10000 Hz).
+        maxPeriodFactor=1.3 rejects outlier periods > 1.3× their neighbour.

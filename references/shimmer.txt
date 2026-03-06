@@ -1,0 +1,34 @@
+ref of the shimmer extraction from the voice 
+
+formulas and methodologies are taken from the ref of google and scientific wiki
+
+        Six shimmer measures capturing micro-variations in vocal amplitude [L07, P96].
+
+        FORMULAS  [P96 Voice§3, Boersma & Weenink]
+        ─────────
+        Let A_i be the peak amplitude of the i-th glottal cycle.
+        Ā  = mean amplitude.
+
+        Shimmer(local) % = (1/(N-1) · Σ|A_i - A_{i+1}|) / Ā × 100
+            → MDVP:Shimmer,     MDVP threshold: 3.810%
+
+        Shimmer(local, dB) = (1/(N-1) · Σ |20 log10(A_i/A_{i+1})|)
+            → MDVP:Shimmer(dB), MDVP threshold: 0.350 dB
+
+        APQ3 = (1/(N-2) · Σ|A_i - (A_{i-1}+A_i+A_{i+1})/3|) / Ā
+            → Shimmer:APQ3
+
+        APQ5 = (1/(N-4) · Σ|A_i - (1/5)·Σ_{j=-2}^{2}A_{i+j}|) / Ā
+            → Shimmer:APQ5
+
+        APQ11 = (1/(N-10) · Σ|A_i - (1/11)·Σ_{j=-5}^{5}A_{i+j}|) / Ā
+            → MDVP:APQ,         MDVP threshold: 3.070%
+            → Shimmer:APQ11     [T10 schema]
+
+        DDA = (1/(N-2) · Σ|(A_i - A_{i-1}) - (A_{i+1} - A_i)|) / Ā
+            = 3 × APQ3  (algebraic identity [P96])
+            → Shimmer:DDA
+
+        Praat call args: (start=0, end=0, minPeriod=0.0001, maxPeriod=0.02,
+                          maxPeriodFactor=1.3, maxAmplitudeFactor=1.6)
+        maxAmplitudeFactor=1.6 rejects amplitude outliers.

@@ -1,0 +1,52 @@
+ths file is ref file for the non linear features extractions forumlas refernces from the internet
+
+computation of RPDE(Recurrence_period_density_entropy)
+
+    Parameters
+    ----------
+    signal : peak-normalised mono signal array
+    m      : embedding dimension (4 used in [L07])
+    tau    : embedding lag in samples (1 is appropriate for high-SR audio)
+    T_max  : maximum return time to track (200 samples ≈ 9 ms at 22050 Hz)
+
+    Returns
+    -------
+    RPDE ∈ [0, 1];  NaN if signal too short or no returns found.
+
+    Implements exactly the algorithm described in [L07] and [W17]:
+      1. Delay-embed with dimension m and lag tau.
+      2. Adaptive ε = 10th percentile of pairwise probe distances.
+      3. For each seed: record first-return time after leaving the ε-ball.
+      4. Normalised Shannon entropy of the return-time histogram.
+
+computation of DFA(Detrended Fluctuation Analysis)
+
+    Parameters
+    ----------
+    signal   : peak-normalised mono signal
+    n_scales : number of log-spaced window sizes
+
+    Returns
+    -------
+    α (float);  NaN if signal too short.
+
+    Implements the algorithm from Peng et al. (1994) as applied to voice
+    signals in [L07]:
+        F(s) ~ s^α
+    → α estimated by log-log regression of fluctuation F(s) vs window size s.
+
+computation of D2(correlation dimension d2 via grassberger procaccia algorithm)
+
+    Produces values in the UCI dataset range (~0.6-3.7).
+        # D2 = slope of log C(r) vs log r
+
+computation of PPE(pitch period entropy) — Shannon entropy of the log-F0 histogram [L08]
+
+    PPE = −Σ p_k · log(p_k)
+
+    where p_k is the normalised count in the k-th histogram bin of
+    log(F0_i) across all voiced frames.
+
+    Introduced in [L08] as a dysphonia measure robust to recording noise.
+    Low PPE → stable, near-periodic F0 (healthy).
+    High PPE → diffuse, irregular F0 distribution (PD).
