@@ -1,7 +1,11 @@
 import parselmouth
 
-from app.features.extractor import extract_voice_features
-from app.features.pipeline import run_pipeline
+from app.extractor.extractor import extract_voice_features
+from app.pipeline.pipeline import run_pipeline
+
+"""
+as of now the test pipeline if only for testing the system flow by using a single chunk without rpc streaming
+"""
 
 audio = "test/healthy/temp.wav"
 
@@ -12,11 +16,11 @@ features = extract_voice_features(audio_path=audio)
 
 print(features)
 
-# result = run_pipeline(
-#     features,
-#     age=65,
-#     sex=0,
-#     test_time=0
-# )
+result = run_pipeline(
+    features,
+    age=65,
+    sex=0,
+    test_time=0
+)
 
-# print(result)
+print(result)

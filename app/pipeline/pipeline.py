@@ -2,7 +2,7 @@ import joblib
 import pandas as pd
 
 from pathlib import Path
-from app.features.selectors import build_classification_vector,build_severity_vector
+from app.helper.selectors import build_classification_vector,build_severity_vector
 from app.schema.schema import CLASSIFICATION_FEATURES,SEVERITY_FEATURES
 
 def run_pipeline(feature_dict, age, sex, test_time):
