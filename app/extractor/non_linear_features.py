@@ -1,72 +1,72 @@
 import numpy as np
 
 # recurrence period density entropy
-def compute_rpde(signal: np.ndarray,m: int = 4,tau: int = 1,T_max: int = 200,target_sr: int = 8000,original_sr: int = 22050) -> float:
+def compute_rpde(signal: np.ndarray, m: int = 4, tau: int = 1, T_max: int = 200, target_sr: int = 8000, original_sr: int = 22050) -> float:
     try:
         step = max(1, round(original_sr / target_sr))
         signal = signal[::step]
-
         n = len(signal)
         max_lag = (m - 1) * tau
         if n < max_lag + T_max + 10:
-            return np.nan   
+            return np.nan
 
-        # 1. Delay embedding — shape (N_embed, m)
         embedded = np.array(
             [signal[i: n - max_lag + i] for i in range(0, max_lag + 1, tau)]
         ).T
         N_embed = len(embedded)
 
-        # 2. Adaptive ε from a random probe subsample
-        rng       = np.random.default_rng(42)
+        rng = np.random.default_rng(42)
         probe_idx = rng.choice(N_embed, size=min(300, N_embed), replace=False)
-        probe     = embedded[probe_idx]
-        diff      = probe[:, None, :] - probe[None, :, :]   # (P, P, m)
-        dists     = np.sqrt((diff ** 2).sum(axis=-1))        # (P, P)
-        flat      = dists[dists > 0]
+        probe = embedded[probe_idx]
+        diff = probe[:, None, :] - probe[None, :, :]
+        dists = np.sqrt((diff ** 2).sum(axis=-1))
+        flat = dists[dists > 0]
         if len(flat) == 0:
             return np.nan
         epsilon = float(np.percentile(flat, 10))
 
-        # 3. First-return periods
-        n_seeds  = min(400, N_embed - T_max - 1)
+        # vectorized -> all seeds x all timesteps at once 
+        n_seeds = min(400, N_embed - T_max - 1)
         seed_idx = rng.choice(N_embed - T_max - 1, size=n_seeds, replace=False)
-        periods  = []
-        for s in seed_idx:
-            x0     = embedded[s]
-            inside = True                    # trajectory starts inside ball
-            for t in range(1, T_max + 1):
-                d = float(np.sqrt(np.sum((embedded[s + t] - x0) ** 2)))
-                if inside:
-                    if d > epsilon:
-                        inside = False       # left the ball
-                else:
-                    if d <= epsilon:
-                        periods.append(t)    # first return ✓
-                        break
+
+        # shape -> (n_seeds, T_max, m)
+        trajectories = np.stack(
+            [embedded[seed_idx + t] for t in range(T_max + 1)], axis=1
+        )
+        origins = trajectories[:, 0:1, :]               # (n_seeds, 1, m)
+        dists_all = np.sqrt(((trajectories - origins) ** 2).sum(axis=-1))  # (n_seeds, T_max+1)
+        inside = dists_all <= epsilon                    # (n_seeds, T_max+1)
+
+        # first return -> was inside at t=0, left, then came back
+        periods = []
+        for i in range(n_seeds):
+            row = inside[i, 1:]                          # skip t=0
+            left = np.argmax(~row) if not row.all() else -1
+            if left == -1:
+                continue
+            returns = np.where(row[left:])[0]
+            if len(returns) > 0:
+                periods.append(int(left + returns[0] + 1))
 
         if len(periods) < 10:
             return np.nan
 
-        # 4. Normalised entropy
-        n_bins  = min(T_max, max(len(set(periods)), 2))
+        n_bins = min(T_max, max(len(set(periods)), 2))
         hist, _ = np.histogram(periods, bins=n_bins)
-        hist    = hist / (hist.sum() + 1e-12)
-        hist    = hist[hist > 0]
-        H       = float(-np.sum(hist * np.log(hist)))
-        # H_max   = float(np.log(len(hist))) if len(hist) > 1 else 1.0
+        hist = hist / (hist.sum() + 1e-12)
+        hist = hist[hist > 0]
+        H = float(-np.sum(hist * np.log(hist)))
         H_max = float(np.log(T_max))
         return H / H_max
 
     except Exception:
         return np.nan
 
-
 # detrended fluctutation analysis
 def compute_dfa(signal: np.ndarray, n_scales: int = 16) -> float:
     try:
         n = len(signal)
-        y = np.cumsum(signal - np.mean(signal))   # integrated signal
+        y = np.cumsum(signal - np.mean(signal))
 
         min_s, max_s = 4, n // 4
         if min_s >= max_s:
@@ -83,18 +83,24 @@ def compute_dfa(signal: np.ndarray, n_scales: int = 16) -> float:
             segs = n // s
             if segs == 0:
                 continue
-            rms_vals = []
-            for k in range(segs):
-                seg   = y[k * s: (k + 1) * s]
-                x_seg = np.arange(len(seg), dtype=np.float64)
-                trend = np.polyval(np.polyfit(x_seg, seg, 1), x_seg)
-                rms_vals.append(float(np.sqrt(np.mean((seg - trend) ** 2))))
-            fluct.append(float(np.mean(rms_vals)))
+            # reshape into segments — no per-segment loop
+            chunks = y[:segs * s].reshape(segs, s)          
+            x = np.arange(s, dtype=np.float64)
+            # vectorized linear detrend across all segments at once
+            '''
+                here eliminated per seg polyfit loop which is overkilling the time complexity 
+            '''
+            xm = x - x.mean()
+            ym = chunks - chunks.mean(axis=1, keepdims=True)
+            slope = (ym * xm).sum(axis=1) / (xm * xm).sum()  
+            trend = slope[:, None] * xm + chunks.mean(axis=1, keepdims=True)
+            rms = np.sqrt(np.mean((chunks - trend) ** 2, axis=1))
+            fluct.append(float(rms.mean()))
 
         if len(fluct) < 2:
             return np.nan
 
-        log_s = np.log(scales[: len(fluct)].astype(float))
+        log_s = np.log(scales[:len(fluct)].astype(float))
         log_f = np.log(np.array(fluct) + 1e-12)
         return float(np.polyfit(log_s, log_f, 1)[0])
 
@@ -120,7 +126,7 @@ def compute_d2(signal: np.ndarray, m: int = 4, tau: int = 1) -> float:
 
         # Subsample for pairwise distances
         rng = np.random.default_rng(42)
-        idx = rng.choice(N, size=min(500, N), replace=False)
+        idx = rng.choice(N, size=min(300, N), replace=False)
         sub = embedded[idx]
 
         # Pairwise distances

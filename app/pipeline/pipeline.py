@@ -5,13 +5,13 @@ from pathlib import Path
 from app.helper.selectors import build_classification_vector,build_severity_vector
 from app.schema.schema import CLASSIFICATION_FEATURES,SEVERITY_FEATURES
 
-def run_pipeline(feature_dict, age, sex, test_time):
-    # loading the ml models
-    BASE_DIR = Path(__file__).resolve().parents[2]
+# loading the ml models on import this can save the loading of models from the disk
+BASE_DIR = Path(__file__).resolve().parents[2]
 
-    classifier = joblib.load(BASE_DIR / "models/classification_model.pkl")
-    severity_model = joblib.load(BASE_DIR /"models/severity_model.pkl")
+classifier = joblib.load(BASE_DIR / "models/classification_model.pkl")
+severity_model = joblib.load(BASE_DIR /"models/severity_model.pkl")
 
+def run_pipeline(feature_dict, age, sex, test_time)->dict:
     # classification
     clf_vector = build_classification_vector(feature_dict)
     clf_df = pd.DataFrame([clf_vector],columns=CLASSIFICATION_FEATURES)
@@ -23,7 +23,10 @@ def run_pipeline(feature_dict, age, sex, test_time):
 
     if prediction == 0:
         # status 0 for healthy
-        return {"parkinsons": False}
+        return {
+            "parkinsons": False,
+            "severity": float(0)
+        }
 
     # severity
     sev_vector = build_severity_vector(feature_dict, age, sex, test_time)
