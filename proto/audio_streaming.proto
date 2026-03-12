@@ -1,0 +1,26 @@
+// using this idl we gen the stubs for serializing, deserizling and also for server client gen code
+
+syntax="proto3";
+
+package audiostreaming;
+
+service AudioStreaming {
+    // rpc methods using for this server client interaction
+    rpc DetectParkinsonsFromAudio(stream AudioChunks) returns (ParkinsonsDetectionResult);
+}
+
+// type of the audio chunks
+message AudioChunks {
+    bytes rawAudioChunk=1;
+    int32 chunkId=2;
+}
+
+// type of the parkinsonsdetectionresult
+message ParkinsonsDetectionResult {
+    bool isHavingParkinsons=1;
+    float severity=2;
+    string suggestion=3;
+}
+
+// we need to assing numbers for the binary encoding 
+// for streaming the audio chunks the optimal size is 20ms ~ around 50 chunks for 10 sec audio raw inp
