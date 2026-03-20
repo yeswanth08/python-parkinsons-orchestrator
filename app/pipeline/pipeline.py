@@ -34,7 +34,17 @@ def run_pipeline(feature_dict, age, sex, test_time)->dict:
 
     severity = severity_model.predict(sev_df)[0]
 
-    return {
+    # extraction of the feature results for the report showcase
+    response = {
         "parkinsons": True,
-        "severity": float(severity)
+        "severity": float(severity),
+        "extracted_voice_features": {},
     }
+
+    for col in clf_df.columns:
+        response["extracted_voice_features"][col] = round(float(clf_df.iloc[0][col]),2)
+
+    for col in sev_df.columns:
+        response["extracted_voice_features"][col] = round(float(sev_df.iloc[0][col]),2)
+
+    return response

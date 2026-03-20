@@ -2,6 +2,8 @@
 
 syntax="proto3";
 
+import "google/protobuf/struct.proto";
+
 package audiostreaming;
 
 service AudioStreaming {
@@ -13,6 +15,10 @@ service AudioStreaming {
 message AudioChunks {
     bytes rawAudioChunk=1;
     int32 chunkId=2;
+    // metadata fields — only set in first chunk when is_metadata=true
+    bool is_metadata = 3;
+    int32 age = 4;
+    int32 sex = 5;
 }
 
 // type of the parkinsonsdetectionresult
@@ -20,6 +26,7 @@ message ParkinsonsDetectionResult {
     bool isHavingParkinsons=1;
     float severity=2;
     string suggestion=3;
+    google.protobuf.Struct extracted_voice_features = 4;
 }
 
 // we need to assing numbers for the binary encoding 

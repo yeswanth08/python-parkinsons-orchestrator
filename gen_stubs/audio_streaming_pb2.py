@@ -22,19 +22,20 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x61udio_streaming.proto\x12\x0e\x61udiostreaming\"5\n\x0b\x41udioChunks\x12\x15\n\rrawAudioChunk\x18\x01 \x01(\x0c\x12\x0f\n\x07\x63hunkId\x18\x02 \x01(\x05\"]\n\x19ParkinsonsDetectionResult\x12\x1a\n\x12isHavingParkinsons\x18\x01 \x01(\x08\x12\x10\n\x08severity\x18\x02 \x01(\x02\x12\x12\n\nsuggestion\x18\x03 \x01(\t2w\n\x0e\x41udioStreaming\x12\x65\n\x19\x44\x65tectParkinsonsFromAudio\x12\x1b.audiostreaming.AudioChunks\x1a).audiostreaming.ParkinsonsDetectionResult(\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x61udio_streaming.proto\x12\x0e\x61udiostreaming\x1a\x1cgoogle/protobuf/struct.proto\"d\n\x0b\x41udioChunks\x12\x15\n\rrawAudioChunk\x18\x01 \x01(\x0c\x12\x0f\n\x07\x63hunkId\x18\x02 \x01(\x05\x12\x13\n\x0bis_metadata\x18\x03 \x01(\x08\x12\x0b\n\x03\x61ge\x18\x04 \x01(\x05\x12\x0b\n\x03sex\x18\x05 \x01(\x05\"\x98\x01\n\x19ParkinsonsDetectionResult\x12\x1a\n\x12isHavingParkinsons\x18\x01 \x01(\x08\x12\x10\n\x08severity\x18\x02 \x01(\x02\x12\x12\n\nsuggestion\x18\x03 \x01(\t\x12\x39\n\x18\x65xtracted_voice_features\x18\x04 \x01(\x0b\x32\x17.google.protobuf.Struct2w\n\x0e\x41udioStreaming\x12\x65\n\x19\x44\x65tectParkinsonsFromAudio\x12\x1b.audiostreaming.AudioChunks\x1a).audiostreaming.ParkinsonsDetectionResult(\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'audio_streaming_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_AUDIOCHUNKS']._serialized_start=41
-  _globals['_AUDIOCHUNKS']._serialized_end=94
-  _globals['_PARKINSONSDETECTIONRESULT']._serialized_start=96
-  _globals['_PARKINSONSDETECTIONRESULT']._serialized_end=189
-  _globals['_AUDIOSTREAMING']._serialized_start=191
-  _globals['_AUDIOSTREAMING']._serialized_end=310
+  _globals['_AUDIOCHUNKS']._serialized_start=71
+  _globals['_AUDIOCHUNKS']._serialized_end=171
+  _globals['_PARKINSONSDETECTIONRESULT']._serialized_start=174
+  _globals['_PARKINSONSDETECTIONRESULT']._serialized_end=326
+  _globals['_AUDIOSTREAMING']._serialized_start=328
+  _globals['_AUDIOSTREAMING']._serialized_end=447
 # @@protoc_insertion_point(module_scope)
