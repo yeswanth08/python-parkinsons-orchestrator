@@ -37,14 +37,24 @@ def run_pipeline(feature_dict, age, sex, test_time)->dict:
     # extraction of the feature results for the report showcase
     response = {
         "parkinsons": True,
-        "severity": float(severity),
+        "severity": round(float(severity),1),
         "extracted_voice_features": {},
     }
 
+    clf_df = clf_df.astype(float).round(2)
+    sev_df = sev_df.astype(float).round(2)
+
+
     for col in clf_df.columns:
-        response["extracted_voice_features"][col] = round(float(clf_df.iloc[0][col]),2)
+        response["extracted_voice_features"][col] = float(clf_df.iloc[0][col])
 
     for col in sev_df.columns:
-        response["extracted_voice_features"][col] = round(float(sev_df.iloc[0][col]),2)
+        response["extracted_voice_features"][col] = float(sev_df.iloc[0][col])
+
+    # print(f"[Pipeline] predict_proba: {classifier.predict_proba(clf_df)}")
+    # print(f"[Pipeline] prediction: {prediction}")
+    # print(f"[Pipeline] full clf_vector: {clf_df.to_dict(orient='records')}")
+    # print(f"[Pipeline] NaN features: {clf_df.columns[clf_df.isna().any()].tolist()}")
+    # print(f"[Pipeline] clf_vector: {clf_df.iloc[0].to_dict()}")
 
     return response

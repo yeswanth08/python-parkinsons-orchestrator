@@ -19,7 +19,7 @@ features = extract_voice_features(audio_path=audio)
 
 result = run_pipeline(
     features,
-    age=65,
+    age=22,
     sex=0,
     test_time=4.0
 )
