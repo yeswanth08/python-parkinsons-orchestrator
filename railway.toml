@@ -1,0 +1,6 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = "python -m server.rpc_server"
+healthcheckPath = ""
