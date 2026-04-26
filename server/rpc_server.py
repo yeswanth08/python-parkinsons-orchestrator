@@ -4,6 +4,8 @@ import grpc
 import tempfile
 import os
 import wave
+import io
+import wave as wave_module
 import signal
 import sys
 import numpy as np
@@ -31,6 +33,27 @@ class AudioStreamingServicer(audio_streaming_pb2_grpc.AudioStreamingServicer):
                 continue
             audio_bytes.extend(chunk.rawAudioChunk)
 
+        # checking if byte starts with riff due to file uploading to detect WAV input from upload — convert to raw PCM
+        raw_bytes = bytes(audio_bytes)
+        if raw_bytes[:4] == b'RIFF':
+            with wave_module.open(io.BytesIO(raw_bytes)) as wf:
+                channels    = wf.getnchannels()
+                sample_rate = wf.getframerate()
+                pcm_frames  = wf.readframes(wf.getnframes())
+            samples = np.frombuffer(pcm_frames, dtype=np.int16)
+            if channels == 2:
+                samples = samples.reshape(-1, 2).mean(axis=1).astype(np.int16)
+            if sample_rate != 22050:
+                ratio   = sample_rate / 22050
+                out_len = int(len(samples) / ratio)
+                xs      = np.linspace(0, len(samples) - 1, out_len)
+                samples = np.interp(
+                    xs, np.arange(len(samples)),
+                    samples.astype(np.float32)
+                ).astype(np.int16)
+            audio_bytes = bytearray(samples.tobytes())
+
+        # derive test_time from actual PCM bytes
         test_time = len(audio_bytes) / (22050 * 2 * 1)
 
         # print(f"[Python] received bytes={len(audio_bytes)} test_time={test_time:.2f}s age={age} sex={sex}")
@@ -53,9 +76,6 @@ class AudioStreamingServicer(audio_streaming_pb2_grpc.AudioStreamingServicer):
         finally:
             os.unlink(tmp_path)
 
-        # print(f"[Python] features sample: { {k: round(v,4) for k,v in list(features.items())[:5]} }")
-        # print(f"[Python] expected test_time for 10s recording: 10.0, got: {test_time:.2f}")
-
         result = run_pipeline(
             feature_dict=features,
             age=age,
@@ -63,13 +83,20 @@ class AudioStreamingServicer(audio_streaming_pb2_grpc.AudioStreamingServicer):
             test_time=test_time
         )
 
-        # print(f"[Python] result parkinsons={result['parkinsons']} severity={result['severity']}")
+        # build protobuf Struct from pipeline's extracted_voice_features
+        features_struct = struct_pb2.Struct()
+        extracted = result.get("extracted_voice_features", {})
+        if extracted:
+            features_struct.update({
+                k: float(v) for k, v in extracted.items()
+                if v is not None and v == v  # filter NaN
+            })
 
         return audio_streaming_pb2.ParkinsonsDetectionResult(
             isHavingParkinsons=bool(result["parkinsons"]),
-            severity=result["severity"],
+            severity=float(result["severity"]),
             suggestion="nothing",
-            extracted_voice_features=result["extracted_voice_features"]
+            extracted_voice_features=features_struct
         )
 
 def serveGRPC():
